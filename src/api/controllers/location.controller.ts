@@ -4,6 +4,8 @@ import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { firebaseRepository, GeoPoint, Timestamp } from '../repository/firebase/firebase.repository';
 
+import { FIREBASE } from '../../config/env.config';
+
 export const registerLocation = (req: Request, res: Response) => {
   const bearer = req.headers.authorization;
 
@@ -17,7 +19,9 @@ export const registerLocation = (req: Request, res: Response) => {
   const payload: any = jwt.verify(token, jwtSecret);
   const userId = String(payload.id);
 
-  const docRef = firebaseRepository.collection('dev-devices').doc(userId).collection('locations').doc();
+  const firebaseDb = FIREBASE.baseCollection || 'dev-devices';
+
+  const docRef = firebaseRepository.collection(firebaseDb).doc(userId).collection('locations').doc();
   docRef.set({
     location: new GeoPoint(location.latitude, location.longitude),
     timestamp: Timestamp.fromDate(new Date(timestamp * 1000)),
