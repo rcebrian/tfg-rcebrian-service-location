@@ -17,12 +17,13 @@ export const registerLocation = (req: Request, res: Response) => {
   const jwtSecret: any = process.env.JWT_SECRET;
 
   const payload: any = jwt.verify(token, jwtSecret);
-  const userId = String(payload.id);
+  const userId = payload.id;
 
   const firebaseDb = FIREBASE.baseCollection || 'dev-devices';
 
-  const docRef = firebaseRepository.collection(firebaseDb).doc(userId).collection('locations').doc();
+  const docRef = firebaseRepository.collection(firebaseDb).doc();
   docRef.set({
+    userId,
     location: new GeoPoint(location.latitude, location.longitude),
     timestamp: Timestamp.fromDate(new Date(timestamp * 1000)),
   }).then(() => {
