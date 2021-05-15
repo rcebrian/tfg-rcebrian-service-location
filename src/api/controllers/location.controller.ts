@@ -1,23 +1,19 @@
 import httpStatus from 'http-status';
-import { Request, Response } from 'express';
-
-import * as jwt from 'jsonwebtoken';
+import { NextFunction, Request, Response } from 'express';
+import { getPropertyFromBearerToken, TokenPropertiesEnum } from '@rcebrian/tfg-rcebrian-common';
 import { firebaseRepository, GeoPoint, Timestamp } from '../repository/firebase/firebase.repository';
-
 import { FIREBASE } from '../../config/env.config';
 
-export const registerLocation = (req: Request, res: Response) => {
-  const bearer = req.headers.authorization;
-
-  // @ts-ignore: the validation is on middleware
-  const token = bearer.replace('Bearer ', '');
+/**
+ * Upload a new GeoPoint to firebase database
+ * @param req with bearer auth and GeoPoint
+ * @param res 201 - Created
+ * @param next call
+ */
+export const registerLocation = (req: Request, res: Response, next: NextFunction) => {
+  const userId = getPropertyFromBearerToken(req.headers, TokenPropertiesEnum.ID);
 
   const { location, timestamp } = req.body;
-
-  const jwtSecret: any = process.env.JWT_SECRET;
-
-  const payload: any = jwt.verify(token, jwtSecret);
-  const userId = payload.id;
 
   const firebaseDb = FIREBASE.baseCollection || 'dev-devices';
 
@@ -28,5 +24,7 @@ export const registerLocation = (req: Request, res: Response) => {
     timestamp: Timestamp.fromDate(new Date(timestamp * 1000)),
   }).then(() => {
     res.status(httpStatus.CREATED).json();
+  }).catch((err) => {
+    next(err);
   });
 };
