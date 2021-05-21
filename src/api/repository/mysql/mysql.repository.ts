@@ -25,8 +25,6 @@ sequelize.authenticate()
     logger.error(`Unable to connect to the database: ${err}`);
   });
 
-export default sequelize;
-
 export {
   Role, Group, Company, Login, User, UsersGroups, Device,
 };
